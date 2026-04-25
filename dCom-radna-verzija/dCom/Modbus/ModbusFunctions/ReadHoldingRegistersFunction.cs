@@ -24,15 +24,42 @@ namespace Modbus.ModbusFunctions
         /// <inheritdoc />
         public override byte[] PackRequest()
         {
-            //TO DO: IMPLEMENT
-            throw new NotImplementedException();
+            ModbusReadCommandParameters p = (ModbusReadCommandParameters)CommandParameters;
+
+            byte[] request = new byte[12];
+
+            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)p.TransactionId)), 0, request, 0, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)p.ProtocolId)), 0, request, 2, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)p.Length)), 0, request, 4, 2);
+
+            request[6] = p.UnitId;
+            request[7] = p.FunctionCode;
+
+            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)p.StartAddress)), 0, request, 8, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)p.Quantity)), 0, request, 10, 2);
+
+            return request;
         }
 
         /// <inheritdoc />
         public override Dictionary<Tuple<PointType, ushort>, ushort> ParseResponse(byte[] response)
         {
-            //TO DO: IMPLEMENT
-            throw new NotImplementedException();
+            Dictionary<Tuple<PointType, ushort>, ushort> retVal = new Dictionary<Tuple<PointType, ushort>, ushort>();
+            ModbusReadCommandParameters p = (ModbusReadCommandParameters)CommandParameters;
+
+            byte functionCode = response[7];
+            if ((functionCode & 0x80) != 0)
+            {
+                HandeException(response[8]);
+            }
+
+            for (int i = 0; i < p.Quantity; i++)
+            {
+                ushort value = (ushort)IPAddress.NetworkToHostOrder(BitConverter.ToInt16(response, 9 + i * 2));
+                retVal.Add(new Tuple<PointType, ushort>(PointType.ANALOG_OUTPUT, (ushort)(p.StartAddress + i)), value);
+            }
+
+            return retVal;
         }
     }
 }
