@@ -2,9 +2,9 @@ STA 78
 TCP 33676
 DBC 1
 
-IN_REG  1 700   0 0 65535 0 AI  @L         3
+IN_REG  1 700   0 0 32767 0 AI  @L         3
 DO_REG  1 1700  0 0 1     0 DO  @STOP      3
 DO_REG  1 1702  0 0 1     0 DO  @VentilV1  3
 DO_REG  1 1705  0 0 1     0 DO  @P1        3
 DO_REG  1 1706  0 0 1     0 DO  @P2        3
-HR_INT  1 4500  0 0 65535 0 AO  @N1        3
+HR_INT  1 4500  0 0 32767 0 AO  @N1        3
